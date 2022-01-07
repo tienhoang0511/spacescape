@@ -1,8 +1,7 @@
 import 'package:flame/components.dart';
 
-// Adding this mixin to any class derived from BaseComponent will make sure that
-// the components gets access to current gameSize. Do not try to access gameSize
-// before your components is added to the game instance.
+// Thêm mixin này vào bất kỳ lớp nào bắt nguồn từ BaseComponent sẽ cho phép
+// các thành phần đó có quyền truy cập vào gameSize hiện tại.
 mixin KnowsGameSize on BaseComponent {
   late Vector2 gameSize;
 

@@ -6,9 +6,11 @@ import 'game.dart';
 
 import '../models/settings.dart';
 
+/// Lớp này phụ trách việc quản lý âm thanh của game
 class AudioPlayerComponent extends Component with HasGameRef<SpacescapeGame> {
   @override
   Future<void>? onLoad() async {
+    // Khởi tạo âm thanh nền và tải các file âm thanh tương tác của game
     FlameAudio.bgm.initialize();
 
     await FlameAudio.audioCache.loadAll([
@@ -21,6 +23,7 @@ class AudioPlayerComponent extends Component with HasGameRef<SpacescapeGame> {
     return super.onLoad();
   }
 
+  // Nếu settings bật thì phát âm thanh nền
   void playBgm(String filename) {
     if (gameRef.buildContext != null) {
       if (Provider.of<Settings>(gameRef.buildContext!, listen: false)
@@ -30,6 +33,7 @@ class AudioPlayerComponent extends Component with HasGameRef<SpacescapeGame> {
     }
   }
 
+  // Nếu settings được bật thì phát âm thanh tương tác
   void playSfx(String filename) {
     if (gameRef.buildContext != null) {
       if (Provider.of<Settings>(gameRef.buildContext!, listen: false)
@@ -39,6 +43,7 @@ class AudioPlayerComponent extends Component with HasGameRef<SpacescapeGame> {
     }
   }
 
+  // Dừng âm thanh nền
   void stopBgm() {
     FlameAudio.bgm.stop();
   }

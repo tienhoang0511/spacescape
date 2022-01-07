@@ -24,45 +24,46 @@ import 'knows_game_size.dart';
 import 'power_up_manager.dart';
 import 'audio_player_component.dart';
 
-// This class is responsible for initializing and running the game-loop.
+// Lớp này chịu trách nhiệm cho việc khởi tạo và chạy game-loop.
 class SpacescapeGame extends BaseGame
     with HasCollidables, HasDraggableComponents {
-  // Stores a reference to player component.
+  // Biển tham chiếu đến người chơi component
   late Player _player;
 
-  // Stores a reference to the main spritesheet.
+  // Biến tham chiếu đến sprite sheet chính.
   late SpriteSheet spriteSheet;
 
-  // Stores a reference to an enemy manager component.
+  // Tham chiếu đến quản lý đối tượng kẻ thù
   late EnemyManager _enemyManager;
 
-  // Stores a reference to an power-up manager component.
+  // Tham chiếu đến quản lý sức mạnh của đối tượng
   late PowerUpManager _powerUpManager;
 
-  // Displays player score on top left.
+  // Hiển thị điểm số phía trên góc trái màn hình.
   late TextComponent _playerScore;
 
-  // Displays player helth on top right.
+  // Hiển thị lượng máu của nhân vật góc trên phải màn hình.
   late TextComponent _playerHealth;
 
+  // Trình quản lý âm thanh
   late AudioPlayerComponent _audioPlayerComponent;
 
-  // List of commands to be processed in current update.
+  // Danh sách các lệnh sẽ được xử lý trong cập nhật hiện tại.
   final _commandList = List<Command>.empty(growable: true);
 
-  // List of commands to be processed in next update.
+  // Danh sách các lệnh sẽ được xử lý trong cập nhật tiếp theo.
   final _addLaterCommandList = List<Command>.empty(growable: true);
 
-  // Indicates wheater the game world has been already initilized.
+  // Cờ cho biết trò chơi bắt đầu hay chưa
   bool _isAlreadyLoaded = false;
 
-  // This method gets called by Flame before the game-loop begins.
-  // Assets loading and adding component should be done here.
+  // Phương thức này được gọi bởi Flame trước khi game-loop bắt đầu.
+  //  Việc tải các assets và thêm components sẽ được thực hiện tại đây.
   @override
   Future<void> onLoad() async {
-    // Initilize the game world only one time.
+    // Khởi tạo và bắt đầu game
     if (!_isAlreadyLoaded) {
-      // Loads and caches all the images for later use.
+      // Tải và lưu trữ tất cả các hình ảnh để sử dụng sau này.
       await images.loadAll([
         'simpleSpace_tilesheet@2.png',
         'freeze.png',
@@ -71,9 +72,11 @@ class SpacescapeGame extends BaseGame
         'nuke.png',
       ]);
 
+      // Khởi tạo âm thanh
       _audioPlayerComponent = AudioPlayerComponent();
       add(_audioPlayerComponent);
 
+      // Tải hình nền và set repeat cho hình nền
       ParallaxComponent _stars = await ParallaxComponent.load(
         [
           ParallaxImageData('stars1.png'),
@@ -85,15 +88,17 @@ class SpacescapeGame extends BaseGame
       );
       add(_stars);
 
+      // Tải hình ảnh sprite các đối tượng  trong game
       spriteSheet = SpriteSheet.fromColumnsAndRows(
         image: images.fromCache('simpleSpace_tilesheet@2.png'),
         columns: 8,
         rows: 6,
       );
 
-      /// As build context is not valid in onLoad() method, we
-      /// cannot get current [PlayerData] here. So initilize player
-      /// with the default SpaceshipType.Canary.
+      /// Vì `context` không có trong phương thức onLoad (),
+      /// nên không thể tải [PlayerData] hiện tại ở đây.
+      /// Vì vậy, ta sẽ khởi tạo phi thuyền cho người chơi
+      /// với giá trị SpaceshipType.Canary mặc định.
       final spaceshipType = SpaceshipType.Canary;
       final spaceship = Spaceship.getSpaceshipByType(spaceshipType);
 
@@ -104,13 +109,15 @@ class SpacescapeGame extends BaseGame
         position: viewport.canvasSize / 2,
       );
 
-      // Makes sure that the sprite is centered.
+      // Cho player căn giữa
       _player.anchor = Anchor.center;
       add(_player);
 
+      // Khởi tạo bộ quản lý kẻ thù
       _enemyManager = EnemyManager(spriteSheet: spriteSheet);
       add(_enemyManager);
 
+      // Khởi tạo bộ quản lý
       _powerUpManager = PowerUpManager();
       add(_powerUpManager);
 
@@ -184,32 +191,32 @@ class SpacescapeGame extends BaseGame
     }
   }
 
-  // This method gets called when game instance gets attached
-  // to Flutter's widget tree.
+  // Phương thức này được gọi khi phiên trò chơi được gán vào
+  // tới widget tree của Flutter.
   @override
   void onAttach() {
     if (buildContext != null) {
-      // Get the PlayerData from current build context without registering a listener.
+      // Lấy PlayerData
       final playerData = Provider.of<PlayerData>(buildContext!, listen: false);
-      // Update the current spaceship type of player.
+      // Cập nhật loại tàu vũ trụ hiện tại của người chơi.
       _player.setSpaceshipType(playerData.spaceshipType);
     }
-    _audioPlayerComponent.playBgm('9. Space Invaders.wav');
+    _audioPlayerComponent.playBgm('9. Space Invaders.wav'); // Phát âm thanh nền
     super.onAttach();
   }
 
+  // Gọi lúc class này bị xóa
   @override
   void onDetach() {
-    _audioPlayerComponent.stopBgm();
+    _audioPlayerComponent.stopBgm(); // dừng âm thanh nền
     super.onDetach();
   }
 
   @override
   void prepare(Component c) {
     super.prepare(c);
-
-    // If the component being prepared is of type KnowsGameSize,
-    // call onResize() on it so that it stores the current game screen size.
+    // Nếu thành phần đang được chuẩn bị là loại KnowsGameSize,
+    // gọi onResize () trên nó để nó lưu trữ kích thước màn hình trò chơi hiện tại.
     if (c is KnowsGameSize) {
       c.onResize(this.size);
     }
@@ -219,7 +226,7 @@ class SpacescapeGame extends BaseGame
   void onResize(Vector2 canvasSize) {
     super.onResize(canvasSize);
 
-    // Loop over all the components of type KnowsGameSize and resize then as well.
+    // Lặp lại tất cả các thành phần của kiểu KnowsGameSize và sau đó thay đổi kích thước.
     this.components.whereType<KnowsGameSize>().forEach((component) {
       component.onResize(this.size);
     });
@@ -229,10 +236,10 @@ class SpacescapeGame extends BaseGame
   void update(double dt) {
     super.update(dt);
 
-    // Run each command from _commandList on each
-    // component from components list. The run()
-    // method of Command is no-op if the command is
-    // not valid for given component.
+    // Chạy từng lệnh từ _commandList trên mỗi
+    // thành phần từ danh sách thành phần. Chạy ()
+    // phương thức của Command là no-op nếu lệnh là
+    // không hợp lệ cho thành phần đã cho.
     _commandList.forEach((command) {
       components.forEach((component) {
         command.run(component);
@@ -252,7 +259,7 @@ class SpacescapeGame extends BaseGame
     /// Display [GameOverMenu] when [Player.health] becomes
     /// zero and camera stops shaking.
     if (_player.health <= 0 && (!camera.shaking)) {
-      this.pauseEngine();
+      this.pauseEngine(); // tạm dừng trò chơi
       this.overlays.remove(PauseButton.ID);
       this.overlays.add(GameOverMenu.ID);
     }
@@ -269,8 +276,7 @@ class SpacescapeGame extends BaseGame
     super.render(canvas);
   }
 
-  // This method handles state of app and pauses
-  // the game when necessary.
+  // Xử lý lifecyle
   @override
   void lifecycleStateChange(AppLifecycleState state) {
     switch (state) {
@@ -280,7 +286,7 @@ class SpacescapeGame extends BaseGame
       case AppLifecycleState.paused:
       case AppLifecycleState.detached:
         if (this._player.health > 0) {
-          this.pauseEngine();
+          this.pauseEngine(); // tạm dừng trò chơi
           this.overlays.remove(PauseButton.ID);
           this.overlays.add(PauseMenu.ID);
         }

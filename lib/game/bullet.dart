@@ -3,16 +3,17 @@ import 'package:flame/geometry.dart';
 
 import 'enemy.dart';
 
-// This component represent a bullet in game world.
+// Component này phụ trách viên đạn trong game
 class Bullet extends SpriteComponent with Hitbox, Collidable {
-  // Speed of the bullet.
+  // Tốc độ của đạn
   double _speed = 450;
 
-  // Controls the direction in which bullet travels.
+  // Hướng mà viên đạn di chuyển
+  // Mặc định là từ dưới lên trên
   Vector2 direction = Vector2(0, -1);
 
-  // Level of this bullet. Essentially represents the
-  // level of spaceship that fired this bullet.
+  // Sức công phá của đạn
+  // Nó đại diện cho tàu vũ trụ đã bắn ra viên đạn
   final int level;
 
   Bullet({
@@ -26,8 +27,8 @@ class Bullet extends SpriteComponent with Hitbox, Collidable {
   void onMount() {
     super.onMount();
 
-    // Adding a circular hitbox with radius as 0.4 times
-    //  the smallest dimension of this components size.
+    // Thêm một HitboxCircle với bán kính là 0,4 là
+    // kích thước nhỏ nhất của component này
     final shape = HitboxCircle(definition: 0.4);
     addShape(shape);
   }
@@ -36,7 +37,7 @@ class Bullet extends SpriteComponent with Hitbox, Collidable {
   void onCollision(Set<Vector2> intersectionPoints, Collidable other) {
     super.onCollision(intersectionPoints, other);
 
-    // If the other Collidable is Enemy, remove this bullet.
+    // Nếu other Collidable là kẻ thù -> loại bỏ viên đạn này
     if (other is Enemy) {
       this.remove();
     }
@@ -46,11 +47,10 @@ class Bullet extends SpriteComponent with Hitbox, Collidable {
   void update(double dt) {
     super.update(dt);
 
-    // Moves the bullet to a new position with _speed and direction.
+    // Di chuyển viên đạn đến vị trí mới với tốc độ và hướng đã định nghĩa.
     this.position += direction * this._speed * dt;
 
-    // If bullet crosses the upper boundary of screen
-    // mark it to be removed it from the game world.
+    // Nếu viên đạn đi qua ranh giới trên của màn hình -> xóa bỏ nó
     if (this.position.y < 0) {
       remove();
     }

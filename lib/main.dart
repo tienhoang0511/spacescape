@@ -12,10 +12,10 @@ import 'models/spaceship_details.dart';
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  // This opens the app in fullscreen mode.
+  // Mở app với chế độ fullscreen
   await Flame.device.fullScreen();
 
-  // Initialize hive.
+  // Khởi tạo hive.
   await initHive();
 
   runApp(
@@ -95,15 +95,18 @@ Future<PlayerData> getPlayerData() async {
   return box.get(PlayerData.PLAYER_DATA_KEY)!;
 }
 
-/// This function reads the stored [Settings] from disk.
+/// Đọc dữ liệu [Settings] từ bộ nhớ
 Future<Settings> getSettings() async {
-  // Open the settings box and read settings from it.
+  // Mở setting box và đọc dữ liệu
   final box = await Hive.openBox<Settings>(Settings.SETTINGS_BOX);
   final settings = box.get(Settings.SETTINGS_KEY);
 
-  // If settings is null, it means this is a fresh launch
+  // Nếu setting == null, it means this is a fresh launch
   // of the game. In such case, we first store the default
   // settings in the settings box and then return the same.
+  // nó có nghĩa là đây là một lần ra mắt mới
+  // của trò chơi. Trong trường hợp này, trước tiên chúng tôi lưu trữ giá trị mặc định
+  // cài đặt trong hộp cài đặt và sau đó trả về như cũ.
   if (settings == null) {
     box.put(Settings.SETTINGS_KEY,
         Settings(soundEffects: true, backgroundMusic: true));

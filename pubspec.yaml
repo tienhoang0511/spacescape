@@ -21,11 +21,11 @@ environment:
   sdk: ">=2.12.0 <3.0.0"
 
 dependencies:
-  flame: 1.0.0-releasecandidate.13
-  flame_audio: 1.0.0-rc.1
-  provider: ^5.0.0
+  flame: 1.0.0-releasecandidate.13 # code trò chơi
+  flame_audio: 1.0.0-rc.1 # âm thanh trò chơi
+  provider: ^5.0.0 # quản lý state
   flutter_carousel_slider: ^1.0.8
-  hive: 2.0.4
+  hive: 2.0.4 # quản lý dữ liệu local
   hive_generator: 1.1.0
   path_provider: 2.0.2
   flutter:

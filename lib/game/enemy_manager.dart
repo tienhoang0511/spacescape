@@ -11,57 +11,59 @@ import 'knows_game_size.dart';
 import '../models/enemy_data.dart';
 import '../models/player_data.dart';
 
-// This component class takes care of spawning new enemy components
-// randomly from top of the screen. It uses the HasGameRef mixin so that
-// it can add child components.
+// Lớp component này đảm nhiệm việc sinh ra các component mới của kẻ thù
+// một cách ngẫu nhiên từ phía trên màn hình.
+// Nó sử dụng hỗn hợp HasGameRef để nó có thể thêm các component con.
 class EnemyManager extends BaseComponent
     with KnowsGameSize, HasGameRef<SpacescapeGame> {
-  // The timer which runs the enemy spawner code at regular interval of time.
+  // Timer khởi tạo của đối phương trong khoảng 1 thời gian được định nghĩa trước
   late Timer _timer;
 
-  // Controls for how long EnemyManager should stop spawning new enemies.
+  // Kiểm soát thời gian EnemyManager ngừng tạo kẻ thù mới.
   late Timer _freezeTimer;
 
-  // A reference to spriteSheet contains enemy sprites.
+  // Biến tham chiếu đến spriteSheet, nó chứa các sprite của kẻ thù
   SpriteSheet spriteSheet;
 
-  // Holds an object of Random class to generate random numbers.
+  // Tạo giá trị ngẫu nhiên
   Random random = Random();
 
   EnemyManager({required this.spriteSheet}) : super() {
-    // Sets the timer to call _spawnEnemy() after every 1 second, until timer is explicitly stops.
+    // Đặt bộ đếm thời gian để gọi _spawnEnemy() sau mỗi 1 giây,
+    // cho đến khi bộ đếm thời gian dừng lại
     _timer = Timer(1, callback: _spawnEnemy, repeat: true);
 
-    // Sets freeze time to 2 seconds. After 2 seconds spawn timer will start again.
+    // Đặt thời gian đóng băng thành 2 giây.
+    // Sau 2 giây, bộ đếm thời gian tạo đối tượng sẽ bắt đầu lại.
     _freezeTimer = Timer(2, callback: () {
       _timer.start();
     });
   }
 
-  // Spawns a new enemy at random position at the top of the screen.
+  // Sinh ra kẻ thù mới ở vị trí ngẫu nhiên phía trên màn hình.
   void _spawnEnemy() {
     Vector2 initialSize = Vector2(64, 64);
 
-    // random.nextDouble() generates a random number between 0 and 1.
-    // Multiplying it by gameSize.x makes sure that the value remains between 0 and width of screen.
+    // random.nextDouble() tạo ra một số ngẫu nhiên từ 0 đến 1.
+    // Nhân nó với gameSize.x để đảm bảo rằng giá trị vẫn nằm trong khoảng
+    // từ 0 đến chiều rộng của màn hình.
     Vector2 position = Vector2(random.nextDouble() * gameSize.x, 0);
 
-    // Clamps the vector such that the enemy sprite remains within the screen.
+    // Kích hoạt vector sao cho hình ảnh kẻ thù vẫn còn trong màn hình.
     position.clamp(
       Vector2.zero() + initialSize / 2,
       gameSize - initialSize / 2,
     );
 
-    // Make sure that we have a valid BuildContext before using it.
     if (gameRef.buildContext != null) {
-      // Get current score and figure out the max level of enemy that
-      // can be spawned for this score.
+      // Nhận điểm hiện tại và tìm ra cấp độ tối đa của kẻ thù
+      // có thể được sinh ra cho điểm số đó.
       int currentScore =
           Provider.of<PlayerData>(gameRef.buildContext!, listen: false)
               .currentScore;
       int maxLevel = mapScoreToMaxEnemyLevel(currentScore);
 
-      /// Gets a random [EnemyData] object from the list.
+      /// Lấy ra một đối tượng dữ liệu kẻ thù [EnemyData] ngẫu nhiên từ danh sách.
       final enemyData = _enemyDataList.elementAt(random.nextInt(maxLevel * 4));
 
       Enemy enemy = Enemy(
@@ -71,17 +73,16 @@ class EnemyManager extends BaseComponent
         enemyData: enemyData,
       );
 
-      // Makes sure that the enemy sprite is centered.
+      // set sprite của kẻ thù được căn giữa.
       enemy.anchor = Anchor.center;
 
-      // Add it to components list of game instance, instead of EnemyManager.
-      // This ensures the collision detection working correctly.
+      // Thêm kẻ thù vào danh sách components của phiên trò chơi
       gameRef.add(enemy);
     }
   }
 
-  // For a given score, this method returns a max level
-  // of enemy that can be used for spawning.
+  // Đối với điểm người chơi hiện có, hàm này trả về level tối đa
+  // của kẻ thù sẽ được tạo ra trong các lần tiếp theo
   int mapScoreToMaxEnemyLevel(int score) {
     int level = 1;
 
@@ -99,42 +100,45 @@ class EnemyManager extends BaseComponent
   @override
   void onMount() {
     super.onMount();
-    // Start the timer as soon as current enemy manager get prepared
-    // and added to the game instance.
+    // Bắt đầu đếm giờ ngay khi quản lý kẻ thù chuẩn bị
+    // được thêm vào phiên trò chơi.
     _timer.start();
   }
 
   @override
   void onRemove() {
     super.onRemove();
-    // Stop the timer if current enemy manager is getting removed from the
-    // game instance.
+    // Dừng bộ đếm thời gian nếu lớp quản lý kẻ thù hiện tại bị xóa khỏi
+    // phiên trò chơi.
     _timer.stop();
   }
 
   @override
   void update(double dt) {
     super.update(dt);
-    // Update timers with delta time to make them tick.
+    // Cập nhật các bộ hẹn giờ với thời gian là delta
     _timer.update(dt);
     _freezeTimer.update(dt);
   }
 
-  // Stops and restarts the timer. Should be called
-  // while restarting and exiting the game.
+  // Dừng và khởi động lại timer tạo kẻ thù. Hàm này sẽ được gọi
+  // khi khởi động lại và thoát trò chơi.
   void reset() {
     _timer.stop();
     _timer.start();
   }
 
-  // Pauses spawn timer for 2 seconds when called.
+  // Hàm này xử lý đóng băng
+  // Dừng timer tạo ra các kẻ thù
+  // Bắt đầu timer đóng băng
   void freeze() {
     _timer.stop();
     _freezeTimer.stop();
     _freezeTimer.start();
   }
 
-  /// A private list of all [EnemyData]s.
+  /// Danh sách dữ liệu của kẻ thù
+  /// Hiện tại kịch bản gồm 15 đối tượng kẻ thù
   static const List<EnemyData> _enemyDataList = [
     EnemyData(
       killPoint: 1,

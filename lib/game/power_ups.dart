@@ -57,10 +57,10 @@ abstract class PowerUp extends SpriteComponent
 
   @override
   void onCollision(Set<Vector2> intersectionPoints, Collidable other) {
-    // If the other entity is Player, call the overriden
-    // onActivated method and mark this component to be removed.
+    // Nếu đối tượng other là Player,
+    // gọi overriden phương thức onActivated và loại bỏ component này đi
     if (other is Player) {
-      // Ask audio player to play power up activation effect.
+      // Phát hiệu ứng kích hoạt power up
       gameRef.addCommand(Command<AudioPlayerComponent>(action: (audioPlayer) {
         audioPlayer.playSfx('powerUp6.ogg');
       }));
@@ -84,7 +84,7 @@ class Nuke extends PowerUp {
 
   @override
   void onActivated() {
-    // Register a command to destory all enemies.
+  // Đăng ký một lệnh để hủy tất cả kẻ thù.
     final command = Command<Enemy>(action: (enemy) {
       enemy.destroy();
     });
@@ -104,7 +104,8 @@ class Health extends PowerUp {
 
   @override
   void onActivated() {
-    // Register a command to increase player health.
+    // Đăng ký lệnh để tăng máu cho người chơi.
+    // Tăng thêm 10 đơn vị máu mỗi lần
     final command = Command<Player>(action: (player) {
       player.increaseHealthBy(10);
     });
@@ -124,19 +125,19 @@ class Freeze extends PowerUp {
 
   @override
   void onActivated() {
-    // Register a command to freeze all enemies.
+    // Đăng ký lệnh đóng băng tất cả kẻ thù.
     final command1 = Command<Enemy>(action: (enemy) {
       enemy.freeze();
     });
     gameRef.addCommand(command1);
 
-    /// Register a command to freeze [EnemyManager].
+    /// Đăng ký lệnh đóng băng [EnemyManager].
     final command2 = Command<EnemyManager>(action: (enemyManager) {
       enemyManager.freeze();
     });
     gameRef.addCommand(command2);
 
-    /// Register a command to freeze [PowerUpManager].
+    /// Đăng ký lệnh đóng băng [PowerUpManager].
     final command3 = Command<PowerUpManager>(action: (powerUpManager) {
       powerUpManager.freeze();
     });
@@ -156,7 +157,7 @@ class MultiFire extends PowerUp {
 
   @override
   void onActivated() {
-    // Register a command to allow multiple bullets.
+    // Thêm một lệnh để cho phép có nhiều viên đạn.
     final command = Command<Player>(action: (player) {
       player.shootMultipleBullets();
     });

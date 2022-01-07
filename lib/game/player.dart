@@ -16,7 +16,7 @@ import 'command.dart';
 import 'knows_game_size.dart';
 import 'audio_player_component.dart';
 
-// This component class represents the player character in game.
+// Lớp này đại diện cho nhân vật người chơi trong trò chơi (phi thuyền)
 class Player extends SpriteComponent
     with
         KnowsGameSize,
@@ -24,37 +24,36 @@ class Player extends SpriteComponent
         Collidable,
         JoystickListener,
         HasGameRef<SpacescapeGame> {
-  // Controls in which direction player should move. Magnitude of this vector does not matter.
-  // It is just used for getting a direction.
+  // Điều khiển hướng người chơi sẽ di chuyển.
   Vector2 _moveDirection = Vector2.zero();
 
-  // Player health.
+  // Máu của người chơi
   int _health = 100;
   int get health => _health;
 
-  // Details of current spaceship.
+  // Phi thuyền
   Spaceship _spaceship;
 
-  // Type of current spaceship.
+  // Loại của phi thuyền
   SpaceshipType spaceshipType;
 
-  // A reference to PlayerData so that
-  // we can modify money.
+  // Tham chiếu đến dữ liệu của người chơi PlayerData
   late PlayerData _playerData;
+
   int get score => _playerData.currentScore;
 
-  // If true, player will shoot 3 bullets at a time.
+  // Nếu đúng, phi thuyền sẽ bắn 3 viên đạn cùng một lúc.
   bool _shootMultipleBullets = false;
 
-  // Controls for how long multi-bullet power up is active.
+  // Kiểm soát thời gian hoạt động của power up
   late Timer _powerUpTimer;
 
-  // Holds an object of Random class to generate random numbers.
+  // tạo số ngẫu nhiên
   Random _random = Random();
 
-  // This method generates a random vector such that
-  // its x component lies between [-100 to 100] and
-  // y component lies between [200, 400]
+  // Phương thức này tạo ra một vectơ ngẫu nhiên sao cho
+  // thành phần x của nó nằm giữa [-100 đến 100] và
+  // thành phần y nằm giữa [200, 400]
   Vector2 getRandomVector() {
     return (Vector2.random(_random) - Vector2(0.5, -1)) * 200;
   }
@@ -66,8 +65,8 @@ class Player extends SpriteComponent
     Vector2? size,
   })  : this._spaceship = Spaceship.getSpaceshipByType(spaceshipType),
         super(sprite: sprite, position: position, size: size) {
-    // Sets power up timer to 4 seconds. After 4 seconds,
-    // multiple bullet will get deactivated.
+    // Đặt hẹn giờ power up thành 4 giây.
+    // Sau 4 giây, chế độ bắn nhiều viên cùng lúc sẽ bị vô hiệu hóa
     _powerUpTimer = Timer(4, callback: () {
       _shootMultipleBullets = false;
     });
@@ -76,9 +75,8 @@ class Player extends SpriteComponent
   @override
   void onMount() {
     super.onMount();
-
-    // Adding a circular hitbox with radius as 0.8 times
-    // the smallest dimension of this components size.
+    // Thêm một hitbox hình tròn với bán kính là 0,8
+    // là kích thước nhỏ nhất của thành phần này.
     final shape = HitboxCircle(definition: 0.8);
     addShape(shape);
 
@@ -89,9 +87,9 @@ class Player extends SpriteComponent
   void onCollision(Set<Vector2> intersectionPoints, Collidable other) {
     super.onCollision(intersectionPoints, other);
 
-    // If other entity is an Enemy, reduce player's health by 10.
+    // Nếu thực thể other là Kẻ thù, giảm 10 máu của người chơi.
     if (other is Enemy) {
-      // Make the camera shake, with custom intensity.
+      // Làm cho màn hình rung
       gameRef.camera.shake(intensity: 20);
 
       _health -= 10;
@@ -101,26 +99,26 @@ class Player extends SpriteComponent
     }
   }
 
-  // This method is called by game class for every frame.
+  // Phương thức này được gọi bởi lớp game cho mọi frame
   @override
   void update(double dt) {
     super.update(dt);
 
     _powerUpTimer.update(dt);
 
-    // Increment the current position of player by (speed * delta time) along moveDirection.
-    // Delta time is the time elapsed since last update. For devices with higher frame rates, delta time
-    // will be smaller and for devices with lower frame rates, it will be larger. Multiplying speed with
-    // delta time ensure that player speed remains same irrespective of the device FPS.
+    // Tăng vị trí hiện tại của người chơi theo (tốc độ * thời gian delta) dọc theo hướng di chuyển.
+    // Thời gian Delta là thời gian đã trôi qua kể từ lần cập nhật cuối cùng.
+    // Đối với các thiết bị có tốc độ khung hình cao hơn, thời gian delta sẽ nhỏ hơn
+    // và đối với các thiết bị có tốc độ khung hình thấp hơn, nó sẽ lớn hơn.
+    // Nhân tốc độ với delta time sẽ đảm bảo tốc độ của người chơi vẫn giữ nguyên bất kể tốc độ khung hình của thiết bị.
     this.position += _moveDirection.normalized() * _spaceship.speed * dt;
 
-    // Clamp position of player such that the player sprite does not go outside the screen size.
+    // Set vị trí của player sao cho nó không nằm ngoài kích thước màn hình.
     this.position.clamp(
           Vector2.zero() + this.size / 2,
           gameSize - this.size / 2,
         );
 
-    // Adds thruster particles.
     final particleComponent = ParticleComponent(
       particle: Particle.generate(
         count: 10,
@@ -140,11 +138,12 @@ class Player extends SpriteComponent
     gameRef.add(particleComponent);
   }
 
-  // Changes the current move direction with given new move direction.
+  // Thay đổi hướng di chuyển hiện tại với hướng di chuyển mới truyền vào
   void setMoveDirection(Vector2 newMoveDirection) {
     _moveDirection = newMoveDirection;
   }
 
+  // Cần điều khiển bắn đạn
   @override
   void joystickAction(JoystickActionEvent event) {
     if (event.id == 0 && event.event == ActionEvent.down) {
@@ -155,17 +154,17 @@ class Player extends SpriteComponent
         level: _spaceship.level,
       );
 
-      // Anchor it to center and add to game world.
+      // Căn giữa và thêm viên đạn vào màn chơi
       bullet.anchor = Anchor.center;
       gameRef.add(bullet);
 
-      // Ask audio player to play bullet fire effect.
+      // Phát ra hiệu ứng bắn đạn
       gameRef.addCommand(Command<AudioPlayerComponent>(action: (audioPlayer) {
         audioPlayer.playSfx('laserSmall_001.ogg');
       }));
 
-      // If multiple bullet is on, add two more
-      // bullets rotated +-PI/6 radians to first bullet.
+      // Nếu có nhiều viên đạn -> thêm hai viên đạn nữa (mặc định là 3 viên cùng lúc)
+      // các viên đạn được xoay (+-PI/6) radian đến viên đạn đầu tiên.
       if (_shootMultipleBullets) {
         for (int i = -1; i < 2; i += 2) {
           Bullet bullet = Bullet(
@@ -184,6 +183,7 @@ class Player extends SpriteComponent
     }
   }
 
+  // Cần điều khiển xử lý di chuyển
   @override
   void joystickChangeDirectional(JoystickDirectionalEvent event) {
     switch (event.directional) {
@@ -217,17 +217,17 @@ class Player extends SpriteComponent
     }
   }
 
-  // Adds given points to player score
-  /// and also add it to [PlayerData.money].
+  // Cộng điểm và tiền của người chơi
+  //  và cũng có thể thêm nó vào [PlayerData.money].
   void addToScore(int points) {
     _playerData.currentScore += points;
     _playerData.money += points;
 
-    // Saves player data to disk.
+    // Lưu dữ liệu người chơi vào bộ nhớ
     _playerData.save();
   }
 
-  // Increases health by give amount.
+  // Tăng máu
   void increaseHealthBy(int points) {
     _health += points;
     // Clamps health to 100.
@@ -236,24 +236,24 @@ class Player extends SpriteComponent
     }
   }
 
-  // Resets player score, health and position. Should be called
-  // while restarting and exiting the game.
+  // Đặt lại điểm số, sức khỏe và vị trí của người chơi.
+  // Được gọi khi khởi động lại và thoát trò chơi.
   void reset() {
     _playerData.currentScore = 0;
     this._health = 100;
     this.position = gameRef.viewport.canvasSize / 2;
   }
 
-  // Changes the current spaceship type with given spaceship type.
-  // This method also takes care of updating the internal spaceship details
-  // as well as the spaceship sprite.
+  // Thay đổi kiểu tàu vũ trụ hiện tại với kiểu tàu vũ trụ đã cho.
+  // Phương thức này cũng xử lý việc cập nhật các chi tiết bên trong tàu vũ trụ
+  // cũng như sprite của tàu vũ trụ.
   void setSpaceshipType(SpaceshipType spaceshipType) {
     this.spaceshipType = spaceshipType;
     this._spaceship = Spaceship.getSpaceshipByType(spaceshipType);
     sprite = gameRef.spriteSheet.getSpriteById(_spaceship.spriteId);
   }
 
-  // Allows player to first multiple bullets for 4 seconds when called.
+  // Cho phép người chơi bắn nhiều viên đạn trong 4 giây khi hàm được gọi.
   void shootMultipleBullets() {
     _shootMultipleBullets = true;
     _powerUpTimer.stop();
